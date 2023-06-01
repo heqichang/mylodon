@@ -25,7 +25,7 @@ public class TestController {
 
         List<User> userList = userService.lambdaQuery().last("LIMIT 100").list();
         Loader.loadList(userList);
-        return "a";
+        return "test";
     }
 
 }
