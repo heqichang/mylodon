@@ -9,7 +9,7 @@ spring:
 
 logging:
   level:
-    com.github.heqichang: debug
+    io.github.heqichang: debug
 
 mybatis-plus:
   global-config:

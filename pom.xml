@@ -10,7 +10,7 @@
         <version>2.7.12</version>
     </parent>
 
-    <groupId>com.github.heqichang</groupId>
+    <groupId>io.github.heqichang</groupId>
     <artifactId>mylodon</artifactId>
     <packaging>pom</packaging>
     <version>0.0.1</version>
