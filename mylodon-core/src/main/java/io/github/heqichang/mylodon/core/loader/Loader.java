@@ -13,15 +13,33 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
+ * 数据加载器
  * @author heqichang
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class Loader {
 
+    /**
+     * 转型加载列表数据
+     * @param data
+     * @param vClass
+     * @return
+     * @param <T>
+     * @param <V>
+     */
     public static  <T, V> List<V> convertLoad(List<T> data, Class<V> vClass) {
         return convertLoad(data, vClass, null);
     }
 
+    /**
+     * 转型加载列表数据
+     * @param data
+     * @param vClass
+     * @param groups
+     * @return
+     * @param <T>
+     * @param <V>
+     */
     public static  <T, V> List<V> convertLoad(List<T> data, Class<V> vClass, List<ParameterGroup> groups) {
         List<V> vList = BeanUtil.copyToList(data, vClass);
         loadList(vList, groups);
