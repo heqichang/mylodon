@@ -6,6 +6,15 @@
 
 ### 新手起步
 
+```xml
+<dependency>
+    <groupId>io.github.heqichang</groupId>
+    <artifactId>mylodon-core</artifactId>
+    <version>0.0.1</version>
+</dependency>
+```
+
+
 ```java
 
 public class Resume {
