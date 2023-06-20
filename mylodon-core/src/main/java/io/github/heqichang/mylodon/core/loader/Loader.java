@@ -3,8 +3,9 @@ package io.github.heqichang.mylodon.core.loader;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
-import io.github.heqichang.mylodon.core.loader.cache.LoadEntityCache;
+import com.ruoyi.common.experiment.loader.cache.LoadEntityCache;
 import io.github.heqichang.mylodon.core.loader.cache.LoadEntityInfo;
+import io.github.heqichang.mylodon.core.loader.cache.LoadInfo;
 import io.github.heqichang.mylodon.core.loader.parameter.ParameterGroup;
 
 import java.util.ArrayList;
@@ -13,33 +14,15 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * 数据加载器
  * @author heqichang
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class Loader {
 
-    /**
-     * 转型加载列表数据
-     * @param data
-     * @param vClass
-     * @return
-     * @param <T>
-     * @param <V>
-     */
     public static  <T, V> List<V> convertLoad(List<T> data, Class<V> vClass) {
         return convertLoad(data, vClass, null);
     }
 
-    /**
-     * 转型加载列表数据
-     * @param data
-     * @param vClass
-     * @param groups
-     * @return
-     * @param <T>
-     * @param <V>
-     */
     public static  <T, V> List<V> convertLoad(List<T> data, Class<V> vClass, List<ParameterGroup> groups) {
         List<V> vList = BeanUtil.copyToList(data, vClass);
         loadList(vList, groups);
@@ -80,24 +63,30 @@ public class Loader {
 
         Class<?> tClass = data.get(0).getClass();
 
-        List<LoadEntityInfo> infoList = LoadEntityCache.get(tClass);
+        List<LoadInfo> infoList = LoadEntityCache.get(tClass);
 
         if (ObjectUtil.isEmpty(infoList)) {
             return;
         }
 
         List<CompletableFuture<Void>> taskList = new ArrayList<>(infoList.size() * 2);
-        for (LoadEntityInfo info : infoList) {
+        for (LoadInfo info : infoList) {
 
             ParameterGroup parameterGroup = findParameterGroup(info, deepLevel, groups);
 
             CompletableFuture<Void> task = CompletableFuture.runAsync(() -> {
-                EntityLoader loader = new EntityLoader(info, data);
+
+                ILoader loader = info.createLoader(data);
                 loader.load(parameterGroup);
-                if (info.isDeepLoad()) {
-                    List<?> deepLoadList = CollectionUtil.getFieldValues(data, info.getLoadFieldName());
-                    loadList(deepLoadList, groups, deepLevel + 1);
+
+                if (info instanceof LoadEntityInfo) {
+                    LoadEntityInfo entityInfo = (LoadEntityInfo) info;
+                    if (entityInfo.isDeepLoad()) {
+                        List<?> deepLoadList = CollectionUtil.getFieldValues(data, info.getLoadFieldName());
+                        loadList(deepLoadList, groups, deepLevel + 1);
+                    }
                 }
+
             });
 
             taskList.add(task);
@@ -106,7 +95,7 @@ public class Loader {
         CompletableFuture.allOf(taskList.toArray(new CompletableFuture[0])).join();
     }
 
-    private static ParameterGroup findParameterGroup(LoadEntityInfo info, int deepLevel, List<ParameterGroup> groups)  {
+    private static ParameterGroup findParameterGroup(LoadInfo info, int deepLevel, List<ParameterGroup> groups)  {
         if (ObjectUtil.isNull(info) || ObjectUtil.isEmpty(groups)) {
             return null;
         }

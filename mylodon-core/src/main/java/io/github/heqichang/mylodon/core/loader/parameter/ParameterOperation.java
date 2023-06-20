@@ -5,6 +5,16 @@ package io.github.heqichang.mylodon.core.loader.parameter;
  */
 public enum ParameterOperation {
 
-    EQ;
+    EQ,
+
+    LE,
+
+    LT,
+
+    GE,
+
+    GT,
+
+    ;
 
 }

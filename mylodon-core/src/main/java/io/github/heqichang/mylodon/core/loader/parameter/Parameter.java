@@ -3,7 +3,7 @@ package io.github.heqichang.mylodon.core.loader.parameter;
 /**
  * @author heqichang
  */
-class Parameter {
+public class Parameter {
 
     private final ParameterOperation operation;
 
@@ -18,15 +18,15 @@ class Parameter {
         this.value = value;
     }
 
-    ParameterOperation getOperation() {
+    public ParameterOperation getOperation() {
         return operation;
     }
 
-    String getColumn() {
+    public String getColumn() {
         return column;
     }
 
-    Object getValue() {
+    public Object getValue() {
         return value;
     }
 }

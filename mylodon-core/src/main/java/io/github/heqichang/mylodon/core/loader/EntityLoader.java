@@ -14,7 +14,7 @@ import java.util.*;
  * @author heqichang
  */
 @SuppressWarnings({"unchecked"})
-class EntityLoader<T> {
+public class EntityLoader<T> implements ILoader {
 
     private final QueryWrapper<T> wrapper;
 
@@ -22,14 +22,15 @@ class EntityLoader<T> {
 
     private final List<?> data;
 
-    EntityLoader(LoadEntityInfo<T> info, List<?> data) {
+    public EntityLoader(LoadEntityInfo<T> info, List<?> data) {
 
         this.wrapper = new QueryWrapper<>();
         this.info = info;
         this.data = data;
     }
 
-    void load(ParameterGroup parameterGroup) {
+    @Override
+    public void load(ParameterGroup parameterGroup) {
 
         String thisField = StringUtils.underlineToCamel(info.getThisFieldColumnName());
         // 获取加载对象的字段名称

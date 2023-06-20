@@ -1,20 +1,17 @@
 package io.github.heqichang.mylodon.core.loader.cache;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import io.github.heqichang.mylodon.core.loader.EntityLoader;
 import io.github.heqichang.mylodon.core.loader.ILoadEntityProvider;
+import io.github.heqichang.mylodon.core.loader.ILoader;
+
+import java.util.List;
 
 /**
  * @author heqichang
  */
 @SuppressWarnings({"rawtypes"})
-public class LoadEntityInfo<T> {
+public class LoadEntityInfo<T> extends LoadInfo<T> {
 
-
-    private String loadFieldName;
-
-    private String thisFieldColumnName;
-
-    private String entityFieldColumnName;
 
     private boolean oneToMany;
 
@@ -24,34 +21,8 @@ public class LoadEntityInfo<T> {
 
     private ILoadEntityProvider provider;
 
-    private IService<T> service;
-
     private boolean deepLoad;
 
-
-    public String getLoadFieldName() {
-        return loadFieldName;
-    }
-
-    public void setLoadFieldName(String loadFieldName) {
-        this.loadFieldName = loadFieldName;
-    }
-
-    public String getThisFieldColumnName() {
-        return thisFieldColumnName;
-    }
-
-    public void setThisFieldColumnName(String thisFieldColumnName) {
-        this.thisFieldColumnName = thisFieldColumnName;
-    }
-
-    public String getEntityFieldColumnName() {
-        return entityFieldColumnName;
-    }
-
-    public void setEntityFieldColumnName(String entityFieldColumnName) {
-        this.entityFieldColumnName = entityFieldColumnName;
-    }
 
     public boolean isOneToMany() {
         return oneToMany;
@@ -85,14 +56,6 @@ public class LoadEntityInfo<T> {
         this.provider = provider;
     }
 
-    public IService<T> getService() {
-        return service;
-    }
-
-    public void setService(IService<T> service) {
-        this.service = service;
-    }
-
     public boolean isDeepLoad() {
         return deepLoad;
     }
@@ -101,4 +64,8 @@ public class LoadEntityInfo<T> {
         this.deepLoad = deepLoad;
     }
 
+    @Override
+    public ILoader createLoader(List<?> data) {
+        return new EntityLoader<>(this, data);
+    }
 }
