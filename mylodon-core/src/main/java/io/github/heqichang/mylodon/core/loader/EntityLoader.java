@@ -57,15 +57,26 @@ public class EntityLoader<T> implements ILoader {
             // 自定义键值，可能原始数据上存在多个 key ，比如 task_ids 字段保存的是 1,2,3 这样的值
             if (ObjectUtil.isNotNull(info.getProvider())) {
                 matchKeys = info.getProvider().matchKey(o);
+                // 提供了自定义的 key ，但是原始数据没有对应的值，因为不用继续执行下去了
+                if (ObjectUtil.isEmpty(matchKeys)) {
+                    continue;
+                }
             }
 
             if (ObjectUtil.isEmpty(matchKeys)) {
-                String matchKey = BeanUtil.getProperty(o, thisField).toString();
+                Object thisFieldObj = BeanUtil.getProperty(o, thisField);
+                // 没有自定义提供，也没有提供 thisFieldColumn 信息
+                if (null == thisFieldObj) {
+                    continue;
+                }
+                String matchKey = thisFieldObj.toString();
                 matchKeys = Collections.singletonList(matchKey);
             }
 
             List<Object> newList = new ArrayList<>();
 
+            // 理论来说这里 matchKeys 不会为 null
+            assert matchKeys != null;
             for (String matchKey : matchKeys) {
                 if (map.containsKey(matchKey)) {
                     // 考虑是否转型

@@ -2,6 +2,7 @@ package io.github.heqichang.mylodon.core.loader;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.ruoyi.common.experiment.loader.cache.LoadEntityCache;
 import io.github.heqichang.mylodon.core.loader.cache.LoadEntityInfo;
@@ -11,6 +12,7 @@ import io.github.heqichang.mylodon.core.loader.parameter.ParameterGroup;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -18,10 +20,18 @@ import java.util.concurrent.CompletableFuture;
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class Loader {
-
     public static  <T, V> List<V> convertLoad(List<T> data, Class<V> vClass) {
-        return convertLoad(data, vClass, null);
+        List<V> vList = BeanUtil.copyToList(data, vClass);
+        loadList(vList);
+        return vList;
     }
+
+    public static  <T, V> List<V> convertLoad(List<T> data, Class<V> vClass, String ...loadFields) {
+        List<V> vList = BeanUtil.copyToList(data, vClass);
+        loadList(vList, loadFields);
+        return vList;
+    }
+
 
     public static  <T, V> List<V> convertLoad(List<T> data, Class<V> vClass, List<ParameterGroup> groups) {
         List<V> vList = BeanUtil.copyToList(data, vClass);
@@ -29,8 +39,22 @@ public class Loader {
         return vList;
     }
 
+    public static  <T, V> List<V> convertLoad(List<T> data, Class<V> vClass, List<ParameterGroup> groups, String ...loadFields) {
+        List<V> vList = BeanUtil.copyToList(data, vClass);
+        loadList(vList, groups, loadFields);
+        return vList;
+    }
+
+    public static  <T, V> V convertLoad(T data, Class<V> vClass, String ...loadFields) {
+        V v = BeanUtil.copyProperties(data, vClass);
+        load(v, loadFields);
+        return v;
+    }
+
     public static  <T, V> V convertLoad(T data, Class<V> vClass) {
-        return convertLoad(data, vClass, null);
+        V v = BeanUtil.copyProperties(data, vClass);
+        load(v);
+        return v;
     }
 
     public static  <T, V> V convertLoad(T data, Class<V> vClass, List<ParameterGroup> groups) {
@@ -39,25 +63,47 @@ public class Loader {
         return v;
     }
 
+    public static  <T, V> V convertLoad(T data, Class<V> vClass, List<ParameterGroup> groups, String ...loadFields) {
+        V v = BeanUtil.copyProperties(data, vClass);
+        load(v, groups, loadFields);
+        return v;
+    }
+
     public static <T> void load(T data) {
-        load(data, null);
+        loadList(Collections.singletonList(data));
+    }
+
+    public static <T> void load(T data, String ...loadFields) {
+        loadList(Collections.singletonList(data), null, loadFields);
     }
 
     public static <T> void load(T data, List<ParameterGroup> groups) {
         loadList(Collections.singletonList(data), groups);
     }
 
+    public static <T> void load(T data, List<ParameterGroup> groups, String ...loadFields) {
+        loadList(Collections.singletonList(data), groups, 0, loadFields);
+    }
+
     public static <T> void loadList(List<T> data) {
-        loadList(data, null);
+        loadList(data, null, 0);
+    }
+
+    public static <T> void loadList(List<T> data, String ...loadFields) {
+        loadList(data, null, 0, loadFields);
+    }
+
+    public static <T> void loadList(List<T> data, List<ParameterGroup> groups, String ...loadFields) {
+        loadList(data, groups, 0, loadFields);
     }
 
     public static <T> void loadList(List<T> data, List<ParameterGroup> groups) {
         loadList(data, groups, 0);
     }
 
-    private static <T> void loadList(List<T> data, List<ParameterGroup> groups, int deepLevel) {
+    private static <T> void loadList(List<T> data, List<ParameterGroup> groups, int deepLevel, String... loadFields) {
 
-        if (ObjectUtil.isEmpty(data)) {
+        if (ObjectUtil.isEmpty(data) || null == data.get(0)) {
             return;
         }
 
@@ -72,6 +118,10 @@ public class Loader {
         List<CompletableFuture<Void>> taskList = new ArrayList<>(infoList.size() * 2);
         for (LoadInfo info : infoList) {
 
+            if (ObjectUtil.isNotEmpty(loadFields) && !ArrayUtil.contains(loadFields, info.getLoadFieldName())) {
+                continue;
+            }
+
             ParameterGroup parameterGroup = findParameterGroup(info, deepLevel, groups);
 
             CompletableFuture<Void> task = CompletableFuture.runAsync(() -> {
@@ -83,7 +133,8 @@ public class Loader {
                     LoadEntityInfo entityInfo = (LoadEntityInfo) info;
                     if (entityInfo.isDeepLoad()) {
                         List<?> deepLoadList = CollectionUtil.getFieldValues(data, info.getLoadFieldName());
-                        loadList(deepLoadList, groups, deepLevel + 1);
+                        String[] nextLoadFields = findNextLoadFields(info, loadFields);
+                        loadList(deepLoadList, groups, deepLevel + 1, nextLoadFields);
                     }
                 }
 
@@ -115,6 +166,36 @@ public class Loader {
         }
 
         return null;
+    }
+
+    private static String[] findNextLoadFields(LoadInfo info, String[] loadFields) {
+
+        if (ArrayUtil.isEmpty(loadFields)) {
+            return ArrayUtil.newArray(String.class, 0);
+        }
+
+        List<String> nextLoadFields = new ArrayList<>();
+
+        for (String loadField : loadFields) {
+
+            if (!loadField.contains(".")) {
+                continue;
+            }
+
+            String[] matchFields = loadField.split("\\.");
+            if (!matchFields[0].equals(info.getLoadFieldName())) {
+                continue;
+            }
+
+            StringJoiner sj = new StringJoiner(".");
+            for (int i = 1; i < matchFields.length; i++) {
+                sj.add(matchFields[i]);
+            }
+
+            nextLoadFields.add(sj.toString());
+        }
+
+        return nextLoadFields.toArray(new String[0]);
     }
 
 }
