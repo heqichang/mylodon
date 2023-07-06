@@ -118,7 +118,7 @@ public class Loader {
         List<CompletableFuture<Void>> taskList = new ArrayList<>(infoList.size() * 2);
         for (LoadInfo info : infoList) {
 
-            if (ObjectUtil.isNotEmpty(loadFields) && !ArrayUtil.contains(loadFields, info.getLoadFieldName())) {
+            if (ObjectUtil.isNotEmpty(loadFields) && !matchLoadFields(info, loadFields)) {
                 continue;
             }
 
@@ -196,6 +196,23 @@ public class Loader {
         }
 
         return nextLoadFields.toArray(new String[0]);
+    }
+
+    private static boolean matchLoadFields(LoadInfo info, String[] loadFields) {
+
+        for (String loadField : loadFields) {
+
+            if (loadField.contains(".")) {
+                // 说明不是当前 level 需要加载的字段
+                continue;
+            }
+
+            if (info.getLoadFieldName().equals(loadField)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }
