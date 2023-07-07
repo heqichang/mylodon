@@ -41,7 +41,7 @@ public class EntityLoader<T> implements ILoader {
         if (ObjectUtil.isNotNull(info.getProvider())) {
             list = info.getProvider().load(data, parameterGroup);
         } else {
-            List<?> thisFieldDataList = CollectionUtil.getFieldValues(data, thisField);
+            List<?> thisFieldDataList = CollectionUtil.getFieldValues(data, thisField, true);
             wrapper.in(info.getEntityFieldColumnName(), thisFieldDataList);
             list = info.getService().list(wrapper);
         }

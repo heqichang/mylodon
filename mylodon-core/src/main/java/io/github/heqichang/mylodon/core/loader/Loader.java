@@ -132,7 +132,7 @@ public class Loader {
                 if (info instanceof LoadEntityInfo) {
                     LoadEntityInfo entityInfo = (LoadEntityInfo) info;
                     if (entityInfo.isDeepLoad()) {
-                        List<?> deepLoadList = CollectionUtil.getFieldValues(data, info.getLoadFieldName());
+                        List<?> deepLoadList = CollectionUtil.getFieldValues(data, info.getLoadFieldName(), true);
                         String[] nextLoadFields = findNextLoadFields(info, loadFields);
                         loadList(deepLoadList, groups, deepLevel + 1, nextLoadFields);
                     }

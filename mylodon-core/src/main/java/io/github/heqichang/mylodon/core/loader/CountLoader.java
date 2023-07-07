@@ -37,7 +37,7 @@ public class CountLoader<T> extends AbstractLoader {
         // 获取加载对象的字段名称
         String loadFiled = info.getLoadFieldName();
 
-        List<?> thisFieldDataList = CollectionUtil.getFieldValues(data, thisField);
+        List<?> thisFieldDataList = CollectionUtil.getFieldValues(data, thisField, true);
 
         // 没有待提取的数据
         if (ObjectUtil.isEmpty(thisFieldDataList)) {
