@@ -28,6 +28,13 @@ public abstract class LoadInfo<T> {
      */
     private String entityFieldColumnName;
 
+
+
+    /**
+     * 是否需要加载下一层
+     */
+    private boolean deepLoad;
+
     /**
      * 持有的 plus 的 service
      */
@@ -47,6 +54,10 @@ public abstract class LoadInfo<T> {
         return entityFieldColumnName;
     }
 
+    public boolean isDeepLoad() {
+        return deepLoad;
+    }
+
     public IService<T> getService() {
         return service;
     }
@@ -61,6 +72,10 @@ public abstract class LoadInfo<T> {
 
     public void setEntityFieldColumnName(String entityFieldColumnName) {
         this.entityFieldColumnName = entityFieldColumnName;
+    }
+
+    public void setDeepLoad(boolean deepLoad) {
+        this.deepLoad = deepLoad;
     }
 
     public void setService(IService<T> service) {

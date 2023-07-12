@@ -21,8 +21,6 @@ public class LoadEntityInfo<T> extends LoadInfo<T> {
 
     private ILoadEntityProvider provider;
 
-    private boolean deepLoad;
-
 
     public boolean isOneToMany() {
         return oneToMany;
@@ -54,14 +52,6 @@ public class LoadEntityInfo<T> extends LoadInfo<T> {
 
     public void setProvider(ILoadEntityProvider provider) {
         this.provider = provider;
-    }
-
-    public boolean isDeepLoad() {
-        return deepLoad;
-    }
-
-    public void setDeepLoad(boolean deepLoad) {
-        this.deepLoad = deepLoad;
     }
 
     @Override
