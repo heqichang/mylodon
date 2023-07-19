@@ -24,7 +24,7 @@ public class TestController {
     public String test() {
 
         List<User> userList = userService.lambdaQuery().last("LIMIT 100").list();
-        Loader.initList(userList).load();
+        Loader.init(userList).load();
         return "test";
     }
 

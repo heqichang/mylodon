@@ -35,9 +35,22 @@ public class Loader<T> {
         return loader;
     }
 
-    public static <T> Loader<T> initList(List<T> dataList) {
+    public static <T, V> Loader<T> init(V data, Class<T> tClass) {
+        Loader<T> loader = new Loader();
+        List<V> vList = CollectionUtil.toList(data);
+        loader.dataList = BeanUtil.copyToList(vList, tClass);
+        return loader;
+    }
+
+    public static <T> Loader<T> init(List<T> dataList) {
         Loader<T> loader = new Loader();
         loader.dataList = dataList;
+        return loader;
+    }
+
+    public static <T> Loader<T> init(List<?> dataList, Class<T> tClass) {
+        Loader<T> loader = new Loader();
+        loader.dataList = BeanUtil.copyToList(dataList, tClass);
         return loader;
     }
 
@@ -72,23 +85,21 @@ public class Loader<T> {
         return this;
     }
 
-    public void load() {
+    public Loader<T> load() {
         load(dataList);
+        return this;
     }
 
-    public <V> V convertLoad(Class<V> vClass) {
-        List<V> vList = BeanUtil.copyToList(dataList, vClass);
-        load(vList);
-        if (ObjectUtil.isEmpty(vList)) {
+    public T one() {
+        if (ObjectUtil.isEmpty(dataList)) {
             return null;
         }
-        return vList.get(0);
+
+        return dataList.get(0);
     }
 
-    public <V> List<V> convertListLoad(Class<V> vClass) {
-        List<V> vList = BeanUtil.copyToList(dataList, vClass);
-        load(vList);
-        return vList;
+    public List<T> list() {
+        return dataList;
     }
 
     private void load(List<?> loadList) {
@@ -125,7 +136,7 @@ public class Loader<T> {
                     List<?> deepLoadList = CollectionUtil.getFieldValues(loadList, info.getLoadFieldName(), true);
                     List<String> nextLoadFieldList = findNextFields(info, loadFieldList);
                     List<String> nextSkipFieldList = findNextFields(info, skipFieldList);
-                    Loader nextLoader = Loader.initList(deepLoadList);
+                    Loader nextLoader = Loader.init(deepLoadList);
                     nextLoader.deepLevel = deepLevel + 1;
                     nextLoader.parameterGroupList = parameterGroupList;
                     nextLoader.loadFieldList = nextLoadFieldList;
