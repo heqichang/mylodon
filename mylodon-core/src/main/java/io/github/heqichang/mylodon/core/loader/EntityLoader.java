@@ -57,10 +57,6 @@ public class EntityLoader<T> implements ILoader {
             // 自定义键值，可能原始数据上存在多个 key ，比如 task_ids 字段保存的是 1,2,3 这样的值
             if (ObjectUtil.isNotNull(info.getProvider())) {
                 matchKeys = info.getProvider().matchKey(o);
-                // 提供了自定义的 key ，但是原始数据没有对应的值，因为不用继续执行下去了
-                if (ObjectUtil.isEmpty(matchKeys)) {
-                    continue;
-                }
             }
 
             if (ObjectUtil.isEmpty(matchKeys)) {
@@ -71,6 +67,11 @@ public class EntityLoader<T> implements ILoader {
                 }
                 String matchKey = thisFieldObj.toString();
                 matchKeys = Collections.singletonList(matchKey);
+            }
+
+            // 没有找到对应的 key ，因此不用继续执行下去了
+            if (ObjectUtil.isEmpty(matchKeys)) {
+                continue;
             }
 
             List<Object> newList = new ArrayList<>();
