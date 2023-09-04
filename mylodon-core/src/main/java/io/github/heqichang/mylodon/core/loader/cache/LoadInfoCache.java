@@ -15,16 +15,13 @@ import io.github.heqichang.mylodon.core.loader.cache.LoadInfo;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author heqichang
  */
-public class LoadEntityCache {
+public class LoadInfoCache {
 
     @SuppressWarnings({"rawtypes"})
     private final static Map<Class<?>, List<LoadInfo>> entityMap = new ConcurrentHashMap<>();
@@ -64,8 +61,9 @@ public class LoadEntityCache {
 
         LoadEntityInfo info = new LoadEntityInfo();
         info.setLoadFieldName(field.getName());
-        info.setThisFieldColumnName(loadEntity.thisColumn());
-        info.setEntityFieldColumnName(loadEntity.entityColumn());
+
+        info.setThisFieldColumnNames(Arrays.asList(loadEntity.thisColumns()));
+        info.setEntityFieldColumnNames(Arrays.asList(loadEntity.entityColumns()));
 
         // 如果加载类型是集合，需要取出集合中实际的类型
         Class<?> loadClass = field.getType();
@@ -109,9 +107,9 @@ public class LoadEntityCache {
 
         LoadCountInfo info = new LoadCountInfo();
         info.setLoadFieldName(field.getName());
-        info.setThisFieldColumnName(loadCount.thisColumn());
-        info.setEntityFieldColumnName(loadCount.entityColumn());
 
+        info.setThisFieldColumnNames(Arrays.asList(loadCount.thisColumns()));
+        info.setEntityFieldColumnNames(Arrays.asList(loadCount.entityColumns()));
 
         if (!ClassUtil.isInterface(loadCount.provider())) {
             try {

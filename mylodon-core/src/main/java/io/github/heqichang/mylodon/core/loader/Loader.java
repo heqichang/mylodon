@@ -2,10 +2,7 @@ package io.github.heqichang.mylodon.core.loader;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.ruoyi.common.experiment.loader.cache.LoadEntityCache;
-import io.github.heqichang.mylodon.core.loader.cache.LoadEntityInfo;
 import io.github.heqichang.mylodon.core.loader.cache.LoadInfo;
 import io.github.heqichang.mylodon.core.loader.parameter.ParameterGroup;
 
@@ -110,7 +107,7 @@ public class Loader<T> {
 
         Class<?> tClass = loadList.get(0).getClass();
 
-        List<LoadInfo> infoList = LoadEntityCache.get(tClass);
+        List<LoadInfo> infoList = com.ruoyi.common.experiment.loader.cache.LoadInfoCache.get(tClass);
 
         if (ObjectUtil.isEmpty(infoList)) {
             return;

@@ -18,15 +18,32 @@ public abstract class LoadInfo<T> {
     private String loadFieldName;
 
 
+    public List<String> getThisFieldColumnNames() {
+        return thisFieldColumnNames;
+    }
+
+    public void setThisFieldColumnNames(List<String> thisFieldColumnNames) {
+        this.thisFieldColumnNames = thisFieldColumnNames;
+    }
+
+    public List<String> getEntityFieldColumnNames() {
+        return entityFieldColumnNames;
+    }
+
+    public void setEntityFieldColumnNames(List<String> entityFieldColumnNames) {
+        this.entityFieldColumnNames = entityFieldColumnNames;
+    }
+
     /**
      * 当前主模型提取的数据库字段
      */
-    private String thisFieldColumnName;
+    private List<String> thisFieldColumnNames;
+
 
     /**
      * 对应需要加载关联模型的关联数据库字段
      */
-    private String entityFieldColumnName;
+    private List<String> entityFieldColumnNames;
 
 
 
@@ -46,13 +63,7 @@ public abstract class LoadInfo<T> {
         return loadFieldName;
     }
 
-    public String getThisFieldColumnName() {
-        return thisFieldColumnName;
-    }
 
-    public String getEntityFieldColumnName() {
-        return entityFieldColumnName;
-    }
 
     public boolean isDeepLoad() {
         return deepLoad;
@@ -66,13 +77,7 @@ public abstract class LoadInfo<T> {
         this.loadFieldName = loadFieldName;
     }
 
-    public void setThisFieldColumnName(String thisFieldColumnName) {
-        this.thisFieldColumnName = thisFieldColumnName;
-    }
 
-    public void setEntityFieldColumnName(String entityFieldColumnName) {
-        this.entityFieldColumnName = entityFieldColumnName;
-    }
 
     public void setDeepLoad(boolean deepLoad) {
         this.deepLoad = deepLoad;

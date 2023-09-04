@@ -1,10 +1,8 @@
 package io.github.heqichang.mylodon.core.loader;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import io.github.heqichang.mylodon.core.loader.cache.LoadEntityInfo;
 import io.github.heqichang.mylodon.core.loader.parameter.ParameterGroup;
 
@@ -14,7 +12,7 @@ import java.util.*;
  * @author heqichang
  */
 @SuppressWarnings({"unchecked"})
-public class EntityLoader<T> implements ILoader {
+public class EntityLoader<T> extends AbstractLoader {
 
     private final QueryWrapper<T> wrapper;
 
@@ -32,7 +30,6 @@ public class EntityLoader<T> implements ILoader {
     @Override
     public void load(ParameterGroup parameterGroup) {
 
-        String thisField = StringUtils.underlineToCamel(info.getThisFieldColumnName());
         // 获取加载对象的字段名称
         String loadFiled = info.getLoadFieldName();
 
@@ -41,8 +38,8 @@ public class EntityLoader<T> implements ILoader {
         if (ObjectUtil.isNotNull(info.getProvider())) {
             list = info.getProvider().load(data, parameterGroup);
         } else {
-            List<?> thisFieldDataList = CollectionUtil.getFieldValues(data, thisField, true);
-            wrapper.in(info.getEntityFieldColumnName(), thisFieldDataList);
+            wrapFields(wrapper, info.getThisFieldColumnNames(), info.getEntityFieldColumnNames(), data);
+            wrapParameter(wrapper, parameterGroup);
             list = info.getService().list(wrapper);
         }
 
@@ -60,24 +57,23 @@ public class EntityLoader<T> implements ILoader {
             }
 
             if (ObjectUtil.isEmpty(matchKeys)) {
-                Object thisFieldObj = BeanUtil.getProperty(o, thisField);
-                // 没有自定义提供，也没有提供 thisFieldColumn 信息
-                if (null == thisFieldObj) {
+
+                List<String> dataFields = convertToCamelFields(info.getThisFieldColumnNames());
+                String keyValue = buildFieldsKey(dataFields, o);
+
+                if (null == keyValue || keyValue.length() == 0) {
                     continue;
                 }
-                String matchKey = thisFieldObj.toString();
-                matchKeys = Collections.singletonList(matchKey);
-            }
 
-            // 没有找到对应的 key ，因此不用继续执行下去了
-            if (ObjectUtil.isEmpty(matchKeys)) {
-                continue;
+                matchKeys = Collections.singletonList(keyValue);
             }
 
             List<Object> newList = new ArrayList<>();
 
-            // 理论来说这里 matchKeys 不会为 null
-            assert matchKeys != null;
+            if (ObjectUtil.isNull(matchKeys)) {
+                continue;
+            }
+
             for (String matchKey : matchKeys) {
                 if (map.containsKey(matchKey)) {
                     // 考虑是否转型
@@ -114,13 +110,13 @@ public class EntityLoader<T> implements ILoader {
         Map<String, Object> map = new HashMap<>(list.size());
 
         // 获取加载对象的字段名称
-        String entityField = StringUtils.underlineToCamel(info.getEntityFieldColumnName());
+        List<String> entityFields = convertToCamelFields(info.getEntityFieldColumnNames());
 
         for (T t : list) {
 
-            String keyValue = BeanUtil.getProperty(t, entityField).toString();
+            String keyValue = buildFieldsKey(entityFields, t);
 
-            if (ObjectUtil.isNull(keyValue)) {
+            if (null == keyValue || keyValue.length() == 0) {
                 continue;
             }
 

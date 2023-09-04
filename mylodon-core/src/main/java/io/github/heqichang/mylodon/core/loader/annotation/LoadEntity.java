@@ -15,16 +15,12 @@ import java.lang.annotation.*;
 public @interface LoadEntity {
 
     /**
-     * 当前模型对应的数据库字段名称
-     * @return 名称
+     * 当前提取对象的数据列名（如果提供自定义实现且实现了 matchKey，这个字段可以忽略）
+     * @return
      */
-    String thisColumn() default "";
+    String[] thisColumns() default {};
 
-    /**
-     * 关联模型对应的数据库字段名称
-     * @return 名称
-     */
-    String entityColumn();
+    String[] entityColumns() default {};
 
     /**
      * 自定义关联模型数据提供器

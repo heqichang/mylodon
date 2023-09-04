@@ -16,7 +16,7 @@ public class User {
 
     private String name;
 
-    @LoadEntity(thisColumn = "id", entityColumn = "user_id", deepLoad = true)
+    @LoadEntity(thisColumns = "id", entityColumns = "user_id", deepLoad = true)
     @TableField(exist = false)
     private Resume resume;
 

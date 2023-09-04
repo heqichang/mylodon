@@ -16,7 +16,7 @@ public class Resume {
 
     private Long userId;
 
-    @LoadCount(thisColumn = "id", entityColumn = "resume_id", entity = Application.class)
+    @LoadCount(thisColumns = "id", entityColumns = "resume_id", entity = Application.class)
     @TableField(exist = false)
     private Long applicationCount;
 

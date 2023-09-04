@@ -23,13 +23,13 @@ public @interface LoadCount {
      * 当前类需要聚合字段的数据库列名
      * @return
      */
-    String thisColumn();
+    String[] thisColumns() default {};
 
     /**
      * 加载对象数据需要 groupBy 的数据库字段，如果提供自定义实现，这个字段可以忽略
      * @return
      */
-    String entityColumn() default "";
+    String[] entityColumns() default {};
 
     Class<? extends ILoadCountProvider> provider() default ILoadCountProvider.class;
 }
