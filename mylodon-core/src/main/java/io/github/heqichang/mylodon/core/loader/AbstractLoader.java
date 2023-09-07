@@ -65,17 +65,11 @@ public abstract class AbstractLoader implements ILoader{
                     Object o = data.get(i);
                     if (i == 0) {
                         q1.nested(q2 -> {
-                            for (int j = 0; j < dataFields.size(); j++) {
-                                q2.eq(loadFields.get(j), ReflectUtil.getFieldValue(o,
-                                        StringUtils.underlineToCamel(dataFields.get(j))));
-                            }
+                            wrapFields(q2, dataFields, loadFields, o);
                         });
                     } else {
                         q1.or(q2 -> {
-                            for (int j = 0; j < dataFields.size(); j++) {
-                                q2.eq(loadFields.get(j), ReflectUtil.getFieldValue(o,
-                                        StringUtils.underlineToCamel(dataFields.get(j))));
-                            }
+                            wrapFields(q2, dataFields, loadFields, o);
                         });
                     }
                 }
@@ -83,11 +77,30 @@ public abstract class AbstractLoader implements ILoader{
         }
     }
 
+    protected <T> void wrapFields(QueryWrapper<T> wrapper, List<String> dataFields, List<String> loadFields, Object o) {
+
+        for (int j = 0; j < dataFields.size(); j++) {
+            // 常数处理
+            if (loadFields.get(j).contains("'")) {
+                // do nothing
+            } else if (dataFields.get(j).contains("'")) {
+                wrapper.eq(loadFields.get(j), dataFields.get(j));
+            } else {
+                wrapper.eq(loadFields.get(j), ReflectUtil.getFieldValue(o,
+                        StringUtils.underlineToCamel(dataFields.get(j))));
+            }
+        }
+    }
+
     protected List<String> convertToCamelFields(List<String> fields) {
 
         List<String> result = new ArrayList<>();
         for (String field : fields) {
-            result.add(StringUtils.underlineToCamel(field));
+            if (field.contains("'")) {
+                result.add(field);
+            } else {
+                result.add(StringUtils.underlineToCamel(field));
+            }
         }
         return result;
     }
@@ -99,6 +112,13 @@ public abstract class AbstractLoader implements ILoader{
     protected String buildFieldsKey(List<String> fields, Object o, boolean enumHandle) {
         StringJoiner keyJoiner = new StringJoiner("-");
         for (String field : fields) {
+
+            // 常数处理
+            if (field.contains("'")) {
+                String strValue = field.substring(1, field.length() - 1);
+                keyJoiner.add(strValue);
+                continue;
+            }
 
             Object value = BeanUtil.getProperty(o, field);
 
