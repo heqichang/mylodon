@@ -68,7 +68,7 @@ public class CountLoader<T> extends AbstractLoader {
 
         List<String> dataFields = convertToCamelFields(info.getThisFieldColumnNames());
         for (Object o : data) {
-            String matchKey = buildFieldsKey(dataFields, o);
+            String matchKey = buildFieldsKey(dataFields, o, true);
             if (countMap.containsKey(matchKey)) {
                 Long count = countMap.get(matchKey);
                 BeanUtil.setFieldValue(o, loadFiled, count);
