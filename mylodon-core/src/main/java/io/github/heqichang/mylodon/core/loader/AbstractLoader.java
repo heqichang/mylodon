@@ -124,7 +124,7 @@ public abstract class AbstractLoader implements ILoader{
 
             if (enumHandle) {
                 Class<?> valueClass = ClassUtil.getClass(value);
-                if (valueClass.isEnum()) {
+                if (MybatisEnumTypeHandler.isMpEnums(valueClass)) {
                     String name = "value";
                     if (!IEnum.class.isAssignableFrom(valueClass)) {
                         name = MybatisEnumTypeHandler.findEnumValueFieldName(valueClass)
