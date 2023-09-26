@@ -84,7 +84,9 @@ public abstract class AbstractLoader implements ILoader{
             if (loadFields.get(j).contains("'")) {
                 // do nothing
             } else if (dataFields.get(j).contains("'")) {
-                wrapper.eq(loadFields.get(j), dataFields.get(j));
+                // 去掉前后 ' 符号
+                String value = dataFields.get(j).substring(1, dataFields.get(j).length() - 1);
+                wrapper.eq(loadFields.get(j), value);
             } else {
                 wrapper.eq(loadFields.get(j), ReflectUtil.getFieldValue(o,
                         StringUtils.underlineToCamel(dataFields.get(j))));
