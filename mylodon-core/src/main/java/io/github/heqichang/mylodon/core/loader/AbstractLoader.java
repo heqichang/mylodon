@@ -60,23 +60,30 @@ public abstract class AbstractLoader implements ILoader{
                     StringUtils.underlineToCamel(dataFields.get(0)));
             wrapper.in(loadFields.get(0), thisFieldDataList);
         } else {
-            wrapper.nested( q1 -> {
-                for (int i = 0; i < data.size(); i++) {
-                    Object o = data.get(i);
-                    Map<String, Object> eqMap = filterCondition(dataFields, loadFields, o);
-                    if (eqMap.size() > 0) {
+            List<Map<String, Object>> eqMapList = new ArrayList<>();
+            for (int i = 0; i < data.size(); i++) {
+                Object o = data.get(i);
+                Map<String, Object> eqMap = filterCondition(dataFields, loadFields, o);
+                if (eqMap.size() > 0) {
+                    eqMapList.add(eqMap);
+                }
+            }
+
+            if (eqMapList.size() > 0) {
+                wrapper.nested( q1 -> {
+                    for (int i = 0; i < eqMapList.size(); i++) {
+                        Map<String, Object> eqMap = eqMapList.get(i);
                         if (i == 0) {
-                            q1.nested(q2 -> {
-                                wrapFields(q2, eqMap);
-                            });
+                            q1.nested(q2 -> wrapFields(q2, eqMap));
                         } else {
-                            q1.or(q2 -> {
-                                wrapFields(q2, eqMap);
-                            });
+                            q1.or(q2 -> wrapFields(q2, eqMap));
                         }
                     }
-                }
-            });
+                });
+            } else {
+                // trick 说明没有匹配的条件，让它返回假条件
+                wrapper.eq("1", 0);
+            }
         }
     }
 
