@@ -2,9 +2,11 @@ package io.github.heqichang.mylodon.core.loader;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.annotation.IEnum;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler;
@@ -12,9 +14,7 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import io.github.heqichang.mylodon.core.loader.parameter.Parameter;
 import io.github.heqichang.mylodon.core.loader.parameter.ParameterGroup;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 
 /**
  * @author heqichang
@@ -63,35 +63,58 @@ public abstract class AbstractLoader implements ILoader{
             wrapper.nested( q1 -> {
                 for (int i = 0; i < data.size(); i++) {
                     Object o = data.get(i);
-                    if (i == 0) {
-                        q1.nested(q2 -> {
-                            wrapFields(q2, dataFields, loadFields, o);
-                        });
-                    } else {
-                        q1.or(q2 -> {
-                            wrapFields(q2, dataFields, loadFields, o);
-                        });
+                    Map<String, Object> eqMap = filterCondition(dataFields, loadFields, o);
+                    if (eqMap.size() > 0) {
+                        if (i == 0) {
+                            q1.nested(q2 -> {
+                                wrapFields(q2, eqMap);
+                            });
+                        } else {
+                            q1.or(q2 -> {
+                                wrapFields(q2, eqMap);
+                            });
+                        }
                     }
                 }
             });
         }
     }
 
-    protected <T> void wrapFields(QueryWrapper<T> wrapper, List<String> dataFields, List<String> loadFields, Object o) {
+    protected <T> void wrapFields(QueryWrapper<T> wrapper, Map<String, Object> eqMap) {
+        for (Map.Entry<String, Object> entry : eqMap.entrySet()) {
+            wrapper.eq(entry.getKey(), entry.getValue());
+        }
+    }
+
+    protected Map<String, Object> filterCondition(List<String> dataFields, List<String> loadFields, Object o) {
+
+        Map<String, Object> eqMap = new HashMap<>();
 
         for (int j = 0; j < dataFields.size(); j++) {
             // 常数处理
             if (loadFields.get(j).contains("'")) {
-                // do nothing
+
+                String loadValue = loadFields.get(j).substring(1, loadFields.get(j).length() - 1);
+                Object dataValue = ReflectUtil.getFieldValue(o, StringUtils.underlineToCamel(dataFields.get(j)));
+
+                // 筛选条件不对
+                if (!StrUtil.equals(dataValue.toString(), loadValue)) {
+                    return MapUtil.empty();
+                }
+
             } else if (dataFields.get(j).contains("'")) {
                 // 去掉前后 ' 符号
                 String value = dataFields.get(j).substring(1, dataFields.get(j).length() - 1);
-                wrapper.eq(loadFields.get(j), value);
+                eqMap.put(loadFields.get(j), value);
+
             } else {
-                wrapper.eq(loadFields.get(j), ReflectUtil.getFieldValue(o,
+                eqMap.put(loadFields.get(j), ReflectUtil.getFieldValue(o,
                         StringUtils.underlineToCamel(dataFields.get(j))));
+
             }
         }
+
+        return eqMap;
     }
 
     protected List<String> convertToCamelFields(List<String> fields) {
