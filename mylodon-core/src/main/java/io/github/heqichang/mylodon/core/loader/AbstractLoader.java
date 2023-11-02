@@ -105,7 +105,7 @@ public abstract class AbstractLoader implements ILoader{
                 Object dataValue = ReflectUtil.getFieldValue(o, StringUtils.underlineToCamel(dataFields.get(j)));
 
                 // 筛选条件不对
-                if (!StrUtil.equals(dataValue.toString(), loadValue)) {
+                if (ObjectUtil.isNull(dataValue) || !StrUtil.equals(dataValue.toString(), loadValue)) {
                     return MapUtil.empty();
                 }
 
