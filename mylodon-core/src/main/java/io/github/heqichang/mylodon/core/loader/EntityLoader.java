@@ -59,7 +59,7 @@ public class EntityLoader<T> extends AbstractLoader {
             if (ObjectUtil.isEmpty(matchKeys)) {
 
                 List<String> dataFields = convertToCamelFields(info.getThisFieldColumnNames());
-                String keyValue = buildFieldsKey(dataFields, o);
+                String keyValue = buildFieldsKey(dataFields, o, true);
 
                 if (null == keyValue || keyValue.length() == 0) {
                     continue;
@@ -114,7 +114,7 @@ public class EntityLoader<T> extends AbstractLoader {
 
         for (T t : list) {
 
-            String keyValue = buildFieldsKey(entityFields, t);
+            String keyValue = buildFieldsKey(entityFields, t, true);
 
             if (null == keyValue || keyValue.length() == 0) {
                 continue;

@@ -131,9 +131,22 @@ public class Loader<T> {
 
                 if (info.isDeepLoad()) {
                     List<?> deepLoadList = CollectionUtil.getFieldValues(loadList, info.getLoadFieldName(), true);
+
+                    Loader nextLoader = Loader.init(deepLoadList);
+
+                    // 这里 loadField 值有可能是数组，所以这里要降维
+                    if (!deepLoadList.isEmpty()) {
+                        if (deepLoadList.get(0) instanceof Collection) {
+                            List<Object> deepCopyLoadList = new ArrayList<>();
+                            deepLoadList.forEach(n -> {
+                                deepCopyLoadList.addAll(((Collection) n));
+                            });
+                            nextLoader = Loader.init(deepCopyLoadList);
+                        }
+                    }
+
                     List<String> nextLoadFieldList = findNextFields(info, loadFieldList);
                     List<String> nextSkipFieldList = findNextFields(info, skipFieldList);
-                    Loader nextLoader = Loader.init(deepLoadList);
                     nextLoader.deepLevel = deepLevel + 1;
                     nextLoader.parameterGroupList = parameterGroupList;
                     nextLoader.loadFieldList = nextLoadFieldList;
