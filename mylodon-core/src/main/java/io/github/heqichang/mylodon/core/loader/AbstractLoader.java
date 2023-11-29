@@ -103,7 +103,8 @@ public abstract class AbstractLoader implements ILoader{
 
                 String loadValue = loadFields.get(j).substring(1, loadFields.get(j).length() - 1);
                 Object dataValue = ReflectUtil.getFieldValue(o, StringUtils.underlineToCamel(dataFields.get(j)));
-
+                dataValue = mpEnumValueProcessor(dataValue);
+                
                 // 筛选条件不对
                 if (ObjectUtil.isNull(dataValue) || !StrUtil.equals(dataValue.toString(), loadValue)) {
                     return MapUtil.empty();
@@ -155,16 +156,7 @@ public abstract class AbstractLoader implements ILoader{
             Object value = BeanUtil.getProperty(o, field);
 
             if (enumHandle) {
-                Class<?> valueClass = ClassUtil.getClass(value);
-                if (MybatisEnumTypeHandler.isMpEnums(valueClass)) {
-                    String name = "value";
-                    if (!IEnum.class.isAssignableFrom(valueClass)) {
-                        name = MybatisEnumTypeHandler.findEnumValueFieldName(valueClass)
-                                .orElseThrow(() -> new IllegalArgumentException(String.format("Could not find @EnumValue in Class: %s.", valueClass.getName())));
-                    }
-                    String method = StringUtils.underlineToCamel("get_" + name);
-                    value = ReflectUtil.invoke(value, method);
-                }
+                value = mpEnumValueProcessor(value);
             }
 
             if (ObjectUtil.isNull(value)) {
@@ -176,5 +168,19 @@ public abstract class AbstractLoader implements ILoader{
         }
 
         return keyJoiner.toString();
+    }
+
+    private Object mpEnumValueProcessor(Object value) {
+        Class<?> valueClass = ClassUtil.getClass(value);
+        if (MybatisEnumTypeHandler.isMpEnums(valueClass)) {
+            String name = "value";
+            if (!IEnum.class.isAssignableFrom(valueClass)) {
+                name = MybatisEnumTypeHandler.findEnumValueFieldName(valueClass)
+                        .orElseThrow(() -> new IllegalArgumentException(String.format("Could not find @EnumValue in Class: %s.", valueClass.getName())));
+            }
+            String method = StringUtils.underlineToCamel("get_" + name);
+            value = ReflectUtil.invoke(value, method);
+        }
+        return value;
     }
 }
